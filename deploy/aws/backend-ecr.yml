@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'ECR Repository for RAG Voice Agent Backend'
+
+Resources:
+  BackendECRRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: rag-voice-agent-backend
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: MUTABLE
+      EncryptionConfiguration:
+        EncryptionType: AES256
+
+Outputs:
+  BackendRepositoryName:
+    Description: "ECR Repository Name for Backend"
+    Value: !Ref BackendECRRepository
+    Export:
+      Name: !Sub "${AWS::StackName}-BackendRepositoryName"
+
+  BackendRepositoryUri:
+    Description: "ECR Repository URI for Backend"
+    Value: !GetAtt BackendECRRepository.RepositoryUri
+    Export:
+      Name: !Sub "${AWS::StackName}-BackendRepositoryUri"

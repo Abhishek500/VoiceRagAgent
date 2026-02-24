@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice AI Knowledge Base - Unified Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-50">
+    <div id="app" class="min-h-screen p-8">
+        <!-- Header -->
+        <div class="max-w-4xl mx-auto mb-8">
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">
+                Voice AI Knowledge Base Setup
+            </h1>
+            <p class="text-gray-600">
+                Create equipment, upload documents, and start chatting with AI
+            </p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="max-w-4xl mx-auto mb-8">
+            <div class="flex items-center justify-between">
+                <div id="step1" class="flex items-center text-blue-600">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center bg-blue-600 text-white">
+                        1
+                    </div>
+                    <span class="ml-2 font-medium">Equipment</span>
+                </div>
+                <div id="progress1" class="flex-1 h-1 mx-4 bg-gray-300"></div>
+                <div id="step2" class="flex items-center text-gray-400">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center bg-gray-300">
+                        2
+                    </div>
+                    <span class="ml-2 font-medium">Upload</span>
+                </div>
+                <div id="progress2" class="flex-1 h-1 mx-4 bg-gray-300"></div>
+                <div id="step3" class="flex items-center text-gray-400">
+                    <div class="w-8 h-8 rounded-full flex items-center justify-center bg-gray-300">
+                        3
+                    </div>
+                    <span class="ml-2 font-medium">Chat</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Message -->
+        <div id="message" class="max-w-4xl mx-auto mb-6 hidden">
+            <div class="p-4 rounded-md"></div>
+        </div>
+
+        <!-- Step 1: Equipment Creation -->
+        <div id="equipmentStep" class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">Step 1: Create Equipment</h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Equipment Name
+                        </label>
+                        <input
+                            type="text"
+                            id="equipmentName"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter equipment name"
+                        />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Tenant ID
+                        </label>
+                        <input
+                            type="text"
+                            id="tenantId"
+                            value="default-tenant"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter tenant ID"
+                        />
+                    </div>
+                    <button
+                        onclick="createEquipment()"
+                        class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                    >
+                        Create Equipment
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Document Upload -->
+        <div id="uploadStep" class="max-w-4xl mx-auto hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">Step 2: Upload Documents</h2>
+                <div id="equipmentInfo" class="mb-4 p-3 bg-blue-50 rounded-md hidden">
+                    <p class="text-sm text-blue-800">
+                        Equipment: <strong id="selectedEquipment"></strong>
+                    </p>
+                </div>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Select Files (PDF, DOCX, TXT)
+                        </label>
+                        <input
+                            type="file"
+                            id="fileInput"
+                            multiple
+                            accept=".pdf,.docx,.txt,.md"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                    </div>
+                    <div id="fileList" class="p-3 bg-gray-50 rounded-md hidden">
+                        <p class="text-sm text-gray-700">Selected files: <span id="fileCount">0</span></p>
+                        <ul id="files" class="mt-2 text-sm text-gray-600"></ul>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button
+                            onclick="uploadDocuments()"
+                            class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700"
+                        >
+                            Upload Documents
+                        </button>
+                        <button
+                            onclick="goToStep(1)"
+                            class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300"
+                        >
+                            Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Chat Interface -->
+        <div id="chatStep" class="max-w-4xl mx-auto hidden">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold mb-4">Step 3: Start Chatting</h2>
+                <div id="uploadInfo" class="mb-4 p-3 bg-green-50 rounded-md">
+                    <p class="text-sm text-green-800">
+                        Equipment: <strong id="chatEquipment"></strong>
+                    </p>
+                    <p class="text-sm text-green-800">
+                        Documents uploaded: <strong id="documentCount">0</strong>
+                    </p>
+                </div>
+                <div class="space-y-4">
+                    <div class="p-4 bg-gray-50 rounded-md">
+                        <h3 class="font-medium mb-2">Chat Options:</h3>
+                        <div class="space-y-2">
+                            <a
+                                id="callCenterLink"
+                                href="/stream"
+                                class="block w-full text-left bg-blue-600 text-white p-3 rounded-md hover:bg-blue-700"
+                            >
+                                📞 Call Center Assistant
+                            </a>
+                            <a
+                                id="documentQnALink"
+                                href="/stream"
+                                class="block w-full text-left bg-green-600 text-white p-3 rounded-md hover:bg-green-700"
+                            >
+                                📚 Document Q&A
+                            </a>
+                            <a
+                                id="technicalLink"
+                                href="/stream"
+                                class="block w-full text-left bg-orange-600 text-white p-3 rounded-md hover:bg-orange-700"
+                            >
+                                🔧 Technical Support
+                            </a>
+                        </div>
+                    </div>
+                    <div class="flex space-x-4">
+                        <button
+                            onclick="resetFlow()"
+                            class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300"
+                        >
+                            Start New Setup
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEquipment = null;
+        let documents = [];
+
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                document.getElementById('fileList').classList.remove('hidden');
+                document.getElementById('fileCount').textContent = files.length;
+                
+                const fileList = document.getElementById('files');
+                fileList.innerHTML = '';
+                for (let i = 0; i < files.length; i++) {
+                    const li = document.createElement('li');
+                    li.textContent = `• ${files[i].name}`;
+                    fileList.appendChild(li);
+                }
+            } else {
+                document.getElementById('fileList').classList.add('hidden');
+            }
+        });
+
+        function showMessage(text, type = 'success') {
+            const messageDiv = document.getElementById('message');
+            const messageContent = messageDiv.querySelector('div');
+            
+            messageDiv.classList.remove('hidden');
+            messageContent.textContent = text;
+            
+            if (type === 'success') {
+                messageContent.className = 'p-4 rounded-md bg-green-50 text-green-800';
+            } else {
+                messageContent.className = 'p-4 rounded-md bg-red-50 text-red-800';
+            }
+            
+            setTimeout(() => {
+                messageDiv.classList.add('hidden');
+            }, 5000);
+        }
+
+        function updateProgress(step) {
+            // Reset all steps
+            for (let i = 1; i <= 3; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                const progressEl = document.getElementById(`progress${i}`);
+                
+                if (i < step) {
+                    stepEl.classList.remove('text-gray-400');
+                    stepEl.classList.add('text-blue-600');
+                    stepEl.querySelector('div').classList.remove('bg-gray-300');
+                    stepEl.querySelector('div').classList.add('bg-blue-600', 'text-white');
+                    progressEl.classList.remove('bg-gray-300');
+                    progressEl.classList.add('bg-blue-600');
+                } else if (i === step) {
+                    stepEl.classList.remove('text-gray-400');
+                    stepEl.classList.add('text-blue-600');
+                    stepEl.querySelector('div').classList.remove('bg-gray-300');
+                    stepEl.querySelector('div').classList.add('bg-blue-600', 'text-white');
+                } else {
+                    stepEl.classList.remove('text-blue-600');
+                    stepEl.classList.add('text-gray-400');
+                    stepEl.querySelector('div').classList.remove('bg-blue-600', 'text-white');
+                    stepEl.querySelector('div').classList.add('bg-gray-300');
+                    if (progressEl) {
+                        progressEl.classList.remove('bg-blue-600');
+                        progressEl.classList.add('bg-gray-300');
+                    }
+                }
+            }
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            document.getElementById('equipmentStep').classList.add('hidden');
+            document.getElementById('uploadStep').classList.add('hidden');
+            document.getElementById('chatStep').classList.add('hidden');
+            
+            // Show current step
+            if (step === 1) {
+                document.getElementById('equipmentStep').classList.remove('hidden');
+            } else if (step === 2) {
+                document.getElementById('uploadStep').classList.remove('hidden');
+            } else if (step === 3) {
+                document.getElementById('chatStep').classList.remove('hidden');
+            }
+            
+            updateProgress(step);
+        }
+
+        async function createEquipment() {
+            const name = document.getElementById('equipmentName').value.trim();
+            const tenantId = document.getElementById('tenantId').value.trim();
+            
+            if (!name) {
+                showMessage('Please enter equipment name', 'error');
+                return;
+            }
+            
+            try {
+                const response = await axios.post('http://localhost:8001/api/v1/equipment/', {
+                    name: name,
+                    tenant_id: tenantId,
+                    description: `Equipment for ${name}`
+                });
+                
+                currentEquipment = response.data;
+                showMessage('Equipment created successfully!');
+                
+                // Update equipment info
+                document.getElementById('selectedEquipment').textContent = currentEquipment.name;
+                document.getElementById('equipmentInfo').classList.remove('hidden');
+                
+                // Clear form
+                document.getElementById('equipmentName').value = '';
+                
+                // Go to next step
+                goToStep(2);
+            } catch (error) {
+                showMessage('Failed to create equipment', 'error');
+                console.error(error);
+            }
+        }
+
+        async function uploadDocuments() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+            
+            if (!files || files.length === 0) {
+                showMessage('Please select files to upload', 'error');
+                return;
+            }
+            
+            if (!currentEquipment || !currentEquipment._id) {
+                showMessage('No equipment selected', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            formData.append('description', 'Uploaded via unified dashboard');
+            
+            try {
+                const response = await axios.post(
+                    `http://localhost:8001/api/v1/equipment/${currentEquipment._id}/documents`,
+                    formData,
+                    {
+                        headers: {
+                            'Content-Type': 'multipart/form-data'
+                        }
+                    }
+                );
+                
+                documents = response.data;
+                showMessage('Documents uploaded successfully!');
+                
+                // Update chat info
+                document.getElementById('chatEquipment').textContent = currentEquipment.name;
+                document.getElementById('documentCount').textContent = documents.length;
+                
+                // Update chat links
+                const baseUrl = `/stream?equipment_id=${currentEquipment._id}&tenant_id=${currentEquipment.tenant_id}`;
+                document.getElementById('callCenterLink').href = `${baseUrl}&prompt_type=call_center`;
+                document.getElementById('documentQnALink').href = `${baseUrl}&prompt_type=document_qna`;
+                document.getElementById('technicalLink').href = `${baseUrl}&prompt_type=technical`;
+                
+                // Clear file input
+                fileInput.value = '';
+                document.getElementById('fileList').classList.add('hidden');
+                
+                // Go to next step
+                goToStep(3);
+            } catch (error) {
+                showMessage('Failed to upload documents', 'error');
+                console.error(error);
+            }
+        }
+
+        function resetFlow() {
+            currentEquipment = null;
+            documents = [];
+            
+            // Clear forms
+            document.getElementById('equipmentName').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileList').classList.add('hidden');
+            
+            // Hide info sections
+            document.getElementById('equipmentInfo').classList.add('hidden');
+            
+            // Reset to step 1
+            goToStep(1);
+        }
+
+        // Initialize
+        updateProgress(1);
+    </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test URL Parameters</title>
+</head>
+<body>
+    <h1>Test Chat Links with Equipment ID</h1>
+    
+    <h2>Equipment: testing_only (ID: 698e2f6bab45d5b8985f6a62)</h2>
+    <p>Document: Senior Applied AI Engineer JD (1).pdf</p>
+    
+    <h3>Direct Chat Links:</h3>
+    <ul>
+        <li><a href="http://localhost:3001/stream?equipment_id=698e2f6bab45d5b8985f6a62&tenant_id=default-tenant&prompt_type=call_center" target="_blank">📞 Call Center Assistant</a></li>
+        <li><a href="http://localhost:3001/stream?equipment_id=698e2f6bab45d5b8985f6a62&tenant_id=default-tenant&prompt_type=document_qna" target="_blank">📚 Document Q&A</a></li>
+        <li><a href="http://localhost:3001/stream?equipment_id=698e2f6bab45d5b8985f6a62&tenant_id=default-tenant&prompt_type=technical" target="_blank">🔧 Technical Support</a></li>
+    </ul>
+    
+    <h3>Test the Simple Dashboard:</h3>
+    <a href="http://localhost:3001/simple-dashboard.html" target="_blank">Open Unified Dashboard</a>
+    
+    <script>
+        // Test URL parameter reading
+        const urlParams = new URLSearchParams(window.location.search);
+        console.log('Equipment ID:', urlParams.get('equipment_id'));
+        console.log('Tenant ID:', urlParams.get('tenant_id'));
+        console.log('Prompt Type:', urlParams.get('prompt_type'));
+    </script>
+</body>
+</html>

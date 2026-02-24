@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice AI Knowledge Base</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: #64748b;
+        }
+        
+        .progress {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            padding: 0 1rem;
+        }
+        
+        .step {
+            display: flex;
+            align-items: center;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+        
+        .step.active {
+            color: #3b82f6;
+        }
+        
+        .step-number {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        
+        .step:not(.active) .step-number {
+            background: #e2e8f0;
+            color: #64748b;
+        }
+        
+        .step.active .step-number {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .progress-line {
+            flex: 1;
+            height: 2px;
+            margin: 0 1rem;
+            background: #e2e8f0;
+        }
+        
+        .progress-line.completed {
+            background: #3b82f6;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #0f172a;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 1rem;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-block {
+            width: 100%;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+        
+        .message {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .message.success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .message.error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+        
+        .info-box {
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-box.info {
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+        }
+        
+        .info-box.success {
+            background: #f0fdf4;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+        }
+        
+        .file-list {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .file-list ul {
+            list-style: none;
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        .file-list li {
+            padding: 0.25rem 0;
+        }
+        
+        .chat-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        
+        .chat-option {
+            display: block;
+            padding: 1rem;
+            background: #3b82f6;
+            color: white;
+            text-decoration: none;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .chat-option:hover {
+            background: #2563eb;
+        }
+        
+        .chat-option.document {
+            background: #10b981;
+        }
+        
+        .chat-option.document:hover {
+            background: #059669;
+        }
+        
+        .chat-option.technical {
+            background: #f59e0b;
+        }
+        
+        .chat-option.technical:hover {
+            background: #d97706;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .loading {
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Voice AI Knowledge Base</h1>
+            <p>Create knowledge bases, upload documents, and start chatting with AI</p>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress">
+            <div id="step1" class="step active">
+                <div class="step-number">1</div>
+                <span>Knowledge Base</span>
+            </div>
+            <div id="progress1" class="progress-line"></div>
+            <div id="step2" class="step">
+                <div class="step-number">2</div>
+                <span>Upload</span>
+            </div>
+            <div id="progress2" class="progress-line"></div>
+            <div id="step3" class="step">
+                <div class="step-number">3</div>
+                <span>Chat</span>
+            </div>
+        </div>
+
+        <!-- Message Container -->
+        <div id="messageContainer"></div>
+
+        // Step 1: Knowledge Base Creation
+        <div id="equipmentStep">
+            <div class="card">
+                <h2>Step 1: Select or Create Knowledge Base</h2>
+                
+                <!-- Existing Equipment List -->
+                <div id="existingEquipment" class="form-group">
+                    <label>Existing Knowledge Base:</label>
+                    <select id="equipmentSelect">
+                        <option value="">-- Select Knowledge Base --</option>
+                    </select>
+                    <div class="btn-group" style="margin-top: 0.5rem;">
+                        <button onclick="loadExistingEquipment()" class="btn btn-secondary">
+                            Load Existing Knowledge Base
+                        </button>
+                        <button onclick="deleteSelectedEquipment()" class="btn btn-secondary">
+                            Delete Selected Knowledge Base
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Create New Equipment -->
+                <div style="border-top: 1px solid #e5e7eb; padding-top: 1rem; margin-top: 1rem;">
+                    <h3 style="font-size: 1.1rem; margin-bottom: 1rem;">Or Create New Knowledge Base:</h3>
+                    <div class="form-group">
+                        <label for="equipmentName">Knowledge Base Name</label>
+                        <input
+                            type="text"
+                            id="equipmentName"
+                            placeholder="Enter knowledge base name"
+                        />
+                    </div>
+                    <div class="form-group">
+                        <label for="tenantId">Tenant ID</label>
+                        <input
+                            type="text"
+                            id="tenantId"
+                            value="default-tenant"
+                            placeholder="Enter tenant ID"
+                        />
+                    </div>
+                    <button onclick="createEquipment()" class="btn btn-primary btn-block">
+                        Create Knowledge Base
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Document Upload -->
+        <div id="uploadStep" class="hidden">
+            <div class="card">
+                <h2>Step 2: Upload Documents</h2>
+                <div id="equipmentInfo" class="info-box info hidden">
+                    Knowledge Base: <strong id="selectedEquipment"></strong>
+                </div>
+                <div id="existingDocs" class="info-box hidden" style="margin-top: 0.75rem;">
+                    <div><strong>Existing documents:</strong></div>
+                    <ul id="existingDocsList" style="margin-top: 0.35rem; padding-left: 1rem;"></ul>
+                    <div id="existingDocsCount" class="text-sm" style="margin-top: 0.25rem; color: #374151;"></div>
+                </div>
+                <div class="form-group">
+                    <label for="fileInput">Select Files (PDF, DOCX, TXT)</label>
+                    <input
+                        type="file"
+                        id="fileInput"
+                        multiple
+                        accept=".pdf,.docx,.txt,.md"
+                    />
+                </div>
+                <div id="fileList" class="file-list hidden">
+                    <p>Selected files: <span id="fileCount">0</span></p>
+                    <ul id="files"></ul>
+                </div>
+                <div class="btn-group">
+                    <button onclick="uploadDocuments()" class="btn btn-primary">
+                        Upload Documents
+                    </button>
+                    <button onclick="goToStep(1)" class="btn btn-secondary">
+                        Back
+                    </button>
+                </div>
+                <button id="proceedToChatBtn" onclick="proceedToChat()" class="btn btn-primary btn-block hidden" style="margin-top: 1rem; background: #10b981;">
+                    Proceed to Chat
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Chat Interface -->
+        <div id="chatStep" class="hidden">
+            <div class="card">
+                <h2>Step 3: Start Chatting</h2>
+                <div class="info-box success">
+                    <p>Equipment: <strong id="chatEquipment"></strong></p>
+                    <p>Documents uploaded: <strong id="documentCount">0</strong></p>
+                </div>
+                <div class="chat-options">
+                    <a id="callCenterLink" href="/stream" class="chat-option">
+                        📞 Call Center Assistant
+                    </a>
+                    <a id="documentQnALink" href="/stream" class="chat-option document">
+                        📚 Document Q&A
+                    </a>
+                    <a id="technicalLink" href="/stream" class="chat-option technical">
+                        🔧 Technical Support
+                    </a>
+                </div>
+                <div class="btn-group" style="margin-top: 2rem;">
+                    <button onclick="resetFlow()" class="btn btn-secondary">
+                        Start New Setup
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentEquipment = null;
+        let documents = [];
+
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                document.getElementById('fileList').classList.remove('hidden');
+                document.getElementById('fileCount').textContent = files.length;
+                
+                const fileList = document.getElementById('files');
+                fileList.innerHTML = '';
+                for (let i = 0; i < files.length; i++) {
+                    const li = document.createElement('li');
+                    li.textContent = `• ${files[i].name}`;
+                    fileList.appendChild(li);
+                }
+            } else {
+                document.getElementById('fileList').classList.add('hidden');
+            }
+        });
+
+        function showMessage(text, type = 'success') {
+            const container = document.getElementById('messageContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.textContent = text;
+            
+            container.innerHTML = '';
+            container.appendChild(messageDiv);
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        function updateProgress(step) {
+            // Reset all steps
+            for (let i = 1; i <= 3; i++) {
+                const stepEl = document.getElementById(`step${i}`);
+                const progressEl = document.getElementById(`progress${i}`);
+                
+                if (i < step) {
+                    stepEl.classList.add('active');
+                    if (progressEl) progressEl.classList.add('completed');
+                } else if (i === step) {
+                    stepEl.classList.add('active');
+                } else {
+                    stepEl.classList.remove('active');
+                    if (progressEl) progressEl.classList.remove('completed');
+                }
+            }
+        }
+
+        async function loadDocumentsForCurrentEquipment() {
+            const docsBox = document.getElementById('existingDocs');
+            const docsList = document.getElementById('existingDocsList');
+            const docsCount = document.getElementById('existingDocsCount');
+            const proceedBtn = document.getElementById('proceedToChatBtn');
+
+            if (!currentEquipment || !currentEquipment._id) {
+                docsBox.classList.add('hidden');
+                docsList.innerHTML = '';
+                docsCount.textContent = '';
+                if (proceedBtn) proceedBtn.classList.add('hidden');
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8001/api/v1/equipment/${currentEquipment._id}/documents`);
+                if (!response.ok) {
+                    throw new Error('Failed to load documents');
+                }
+
+                const data = await response.json();
+                const docs = data.documents || [];
+                documents = docs;
+
+                docsList.innerHTML = '';
+                docs.forEach((doc) => {
+                    const li = document.createElement('li');
+                    li.textContent = `${doc.file_name || 'Unnamed file'} ${doc.created_at ? '— ' + doc.created_at : ''}`;
+                    docsList.appendChild(li);
+                });
+
+                docsCount.textContent = `${docs.length} document${docs.length === 1 ? '' : 's'}`;
+                docsBox.classList.remove('hidden');
+
+                // Show "Proceed to Chat" button if documents exist
+                if (proceedBtn) {
+                    if (docs.length > 0) {
+                        proceedBtn.classList.remove('hidden');
+                    } else {
+                        proceedBtn.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load documents for knowledge base:', error);
+                docsBox.classList.add('hidden');
+                docsList.innerHTML = '';
+                docsCount.textContent = '';
+                if (proceedBtn) proceedBtn.classList.add('hidden');
+            }
+        }
+
+        async function deleteSelectedEquipment() {
+            const select = document.getElementById('equipmentSelect');
+            const equipmentId = select.value;
+
+            if (!equipmentId) {
+                showMessage('Please select equipment to delete', 'error');
+                return;
+            }
+
+            const selectedText = select.options[select.selectedIndex]?.text || 'this equipment';
+            const confirmed = window.confirm(`Delete ${selectedText}? This will also delete related documents and chunks.`);
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:8001/api/v1/equipment/${equipmentId}`, {
+                    method: 'DELETE'
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(errorText || 'Failed to delete equipment');
+                }
+
+                if (currentEquipment && currentEquipment._id === equipmentId) {
+                    resetFlow();
+                }
+
+                await loadEquipmentList();
+                showMessage('Knowledge base deleted successfully!');
+            } catch (error) {
+                showMessage('Failed to delete knowledge base: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            document.getElementById('equipmentStep').classList.add('hidden');
+            document.getElementById('uploadStep').classList.add('hidden');
+            document.getElementById('chatStep').classList.add('hidden');
+            
+            // Show current step
+            if (step === 1) {
+                document.getElementById('equipmentStep').classList.remove('hidden');
+            } else if (step === 2) {
+                document.getElementById('uploadStep').classList.remove('hidden');
+            } else if (step === 3) {
+                document.getElementById('chatStep').classList.remove('hidden');
+            }
+            
+            updateProgress(step);
+        }
+
+        async function createEquipment() {
+            const name = document.getElementById('equipmentName').value.trim();
+            const tenantId = document.getElementById('tenantId').value.trim();
+            
+            if (!name) {
+                showMessage('Please enter equipment name', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/equipment/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        tenant_id: tenantId,
+                        description: `Equipment for ${name}`
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to create equipment');
+                }
+                
+                currentEquipment = await response.json();
+                showMessage('Knowledge base created successfully!');
+                
+                // Update equipment info
+                document.getElementById('selectedEquipment').textContent = currentEquipment.name;
+                document.getElementById('equipmentInfo').classList.remove('hidden');
+                await loadDocumentsForCurrentEquipment();
+                
+                // Clear form
+                document.getElementById('equipmentName').value = '';
+                
+                // Go to next step
+                goToStep(2);
+            } catch (error) {
+                showMessage('Failed to create knowledge base: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+
+        function proceedToChat() {
+            if (!currentEquipment || !currentEquipment._id) {
+                showMessage('No knowledge base selected', 'error');
+                return;
+            }
+
+            if (!documents || documents.length === 0) {
+                showMessage('No documents available. Please upload documents first.', 'error');
+                return;
+            }
+
+            // Update chat info
+            document.getElementById('chatEquipment').textContent = currentEquipment.name;
+            document.getElementById('documentCount').textContent = documents.length;
+
+            // Update chat links
+            const baseUrl = `/stream?equipment_id=${currentEquipment._id}&tenant_id=${currentEquipment.tenant_id}`;
+            document.getElementById('callCenterLink').href = `${baseUrl}&prompt_type=call_center`;
+            document.getElementById('documentQnALink').href = `${baseUrl}&prompt_type=document_qna`;
+            document.getElementById('technicalLink').href = `${baseUrl}&prompt_type=technical`;
+
+            // Go to chat step
+            goToStep(3);
+        }
+
+        async function uploadDocuments() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+            
+            if (!files || files.length === 0) {
+                showMessage('Please select files to upload', 'error');
+                return;
+            }
+            
+            if (!currentEquipment || !currentEquipment._id) {
+                showMessage('No equipment selected', 'error');
+                return;
+            }
+            
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+            formData.append('description', 'Uploaded via unified dashboard');
+            
+            try {
+                const response = await fetch(
+                    `http://localhost:8001/api/v1/equipment/${currentEquipment._id}/documents`,
+                    {
+                        method: 'POST',
+                        body: formData
+                    }
+                );
+                
+                if (!response.ok) {
+                    throw new Error('Failed to upload documents');
+                }
+                
+                const responseData = await response.json();
+                const uploadedDocs = responseData.documents || [];
+                documents = [...documents, ...uploadedDocs];
+                
+                showMessage('Documents uploaded successfully!');
+                
+                // Update chat info
+                document.getElementById('chatEquipment').textContent = currentEquipment.name;
+                document.getElementById('documentCount').textContent = documents.length;
+
+                // Refresh existing docs list
+                await loadDocumentsForCurrentEquipment();
+                
+                // Update chat links
+                const baseUrl = `/stream?equipment_id=${currentEquipment._id}&tenant_id=${currentEquipment.tenant_id}`;
+                document.getElementById('callCenterLink').href = `${baseUrl}&prompt_type=call_center`;
+                document.getElementById('documentQnALink').href = `${baseUrl}&prompt_type=document_qna`;
+                document.getElementById('technicalLink').href = `${baseUrl}&prompt_type=technical`;
+                
+                // Clear file input
+                fileInput.value = '';
+                document.getElementById('fileList').classList.add('hidden');
+                
+                // Go to next step
+                goToStep(3);
+            } catch (error) {
+                showMessage('Failed to upload documents: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+
+        function resetFlow() {
+            currentEquipment = null;
+            documents = [];
+            
+            // Clear forms
+            document.getElementById('equipmentName').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileList').classList.add('hidden');
+            
+            // Hide info sections
+            document.getElementById('equipmentInfo').classList.add('hidden');
+            
+            // Reset to step 1
+            goToStep(1);
+        }
+
+        // Load existing equipment
+        async function loadExistingEquipment() {
+            const select = document.getElementById('equipmentSelect');
+            const equipmentId = select.value;
+            
+            if (!equipmentId) {
+                showMessage('Please select a knowledge base', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`http://localhost:8001/api/v1/equipment/${equipmentId}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load equipment');
+                }
+                
+                currentEquipment = await response.json();
+                showMessage('Knowledge base loaded successfully!');
+                
+                // Update equipment info
+                document.getElementById('selectedEquipment').textContent = currentEquipment.name;
+                document.getElementById('equipmentInfo').classList.remove('hidden');
+                await loadDocumentsForCurrentEquipment();
+                
+                // Clear selection
+                select.value = '';
+                
+                // Go to upload step
+                goToStep(2);
+            } catch (error) {
+                showMessage('Failed to load knowledge base: ' + error.message, 'error');
+                console.error(error);
+            }
+        }
+
+        // Load equipment list on page load
+        async function loadEquipmentList() {
+            try {
+                const response = await fetch('http://localhost:8001/api/v1/equipment/');
+                if (!response.ok) {
+                    throw new Error('Failed to load equipment list');
+                }
+                
+                const equipment = await response.json();
+                const select = document.getElementById('equipmentSelect');
+                
+                // Clear existing options
+                select.innerHTML = '<option value="">-- Select Knowledge Base --</option>';
+                
+                // Add equipment options
+                equipment.forEach(eq => {
+                    const option = document.createElement('option');
+                    option.value = eq._id;
+                    option.textContent = `${eq.name} (${eq.tenant_id})`;
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Failed to load equipment list:', error);
+            }
+        }
+
+        // Initialize
+        updateProgress(1);
+        loadEquipmentList();
+    </script>
+</body>
+</html>
