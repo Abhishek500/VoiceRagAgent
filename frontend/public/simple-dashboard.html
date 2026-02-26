@@ -425,6 +425,11 @@
     </div>
 
     <script>
+        // Auto-detect backend URL: same host, port 80 (or use window.location.origin for same-origin)
+        const API_BASE = window.location.hostname === 'localhost'
+            ? 'http://localhost:8001/api/v1'
+            : `${window.location.protocol}//${window.location.hostname}/api/v1`;
+
         let currentEquipment = null;
         let documents = [];
 
@@ -494,7 +499,7 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:8001/api/v1/equipment/${currentEquipment._id}/documents`);
+                const response = await fetch(`${API_BASE}/equipment/${currentEquipment._id}/documents`);
                 if (!response.ok) {
                     throw new Error('Failed to load documents');
                 }
@@ -546,7 +551,7 @@
             }
 
             try {
-                const response = await fetch(`http://localhost:8001/api/v1/equipment/${equipmentId}`, {
+                const response = await fetch(`${API_BASE}/equipment/${equipmentId}`, {
                     method: 'DELETE'
                 });
 
@@ -595,7 +600,7 @@
             }
             
             try {
-                const response = await fetch('http://localhost:8001/api/v1/equipment/', {
+                const response = await fetch(`${API_BASE}/equipment/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -677,7 +682,7 @@
             
             try {
                 const response = await fetch(
-                    `http://localhost:8001/api/v1/equipment/${currentEquipment._id}/documents`,
+                    `${API_BASE}/equipment/${currentEquipment._id}/documents`,
                     {
                         method: 'POST',
                         body: formData
@@ -746,7 +751,7 @@
             }
             
             try {
-                const response = await fetch(`http://localhost:8001/api/v1/equipment/${equipmentId}`);
+                const response = await fetch(`${API_BASE}/equipment/${equipmentId}`);
                 if (!response.ok) {
                     throw new Error('Failed to load equipment');
                 }
@@ -773,7 +778,7 @@
         // Load equipment list on page load
         async function loadEquipmentList() {
             try {
-                const response = await fetch('http://localhost:8001/api/v1/equipment/');
+                const response = await fetch(`${API_BASE}/equipment/`);
                 if (!response.ok) {
                     throw new Error('Failed to load equipment list');
                 }
