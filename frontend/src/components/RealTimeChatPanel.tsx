@@ -63,9 +63,12 @@ export default function RealTimeChatPanel({
     transportState === TransportStateEnum.CONNECTING || transportState === TransportStateEnum.AUTHENTICATING;
   // Check for READY state, but also allow CONNECTED as a fallback
   // Also check if we're in a state where the connection is established (even if not READY yet)
+  // On HTTP (no HTTPS), mic access fails and transport stays CONNECTING even though WebSocket works.
+  // Treat as connected if bot has sent messages (messages.length > 0 and transport is at least CONNECTING).
   const isConnected =
     transportState === TransportStateEnum.READY ||
-    transportState === TransportStateEnum.CONNECTED;
+    transportState === TransportStateEnum.CONNECTED ||
+    (isConnecting && messages.length > 0);
 
   // Track if we've ever been connected (to show mic toggle even if state temporarily changes)
   const [hasBeenConnected, setHasBeenConnected] = useState(false);
@@ -76,7 +79,7 @@ export default function RealTimeChatPanel({
     } else if (transportState === TransportStateEnum.DISCONNECTED) {
       setHasBeenConnected(false);
     }
-  }, [isConnected, transportState]);
+  }, [isConnected, transportState, messages.length]);
 
   // Log transport state changes for debugging
   useEffect(() => {
