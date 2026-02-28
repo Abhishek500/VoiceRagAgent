@@ -36,6 +36,7 @@ export default function RealTimeChatPanel({
   const [chunksMetadata, setChunksMetadata] = useState<{ [key: string]: ChunkMetadata }>({});
   const [selectedEqId, setSelectedEqId] = useState<string>(equipmentId || "");
   const [isPaused, setIsPaused] = useState(false);
+  const [connectionActive, setConnectionActive] = useState(false);
 
   const listRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -63,12 +64,13 @@ export default function RealTimeChatPanel({
     transportState === TransportStateEnum.CONNECTING || transportState === TransportStateEnum.AUTHENTICATING;
   // Check for READY state, but also allow CONNECTED as a fallback
   // Also check if we're in a state where the connection is established (even if not READY yet)
-  // On HTTP (no HTTPS), mic access fails and transport stays CONNECTING even though WebSocket works.
-  // Treat as connected if bot has sent messages (messages.length > 0 and transport is at least CONNECTING).
+  // On HTTP (no HTTPS), mic access fails and transport may go to DISCONNECTED
+  // even though WebSocket is still working and bot messages are flowing.
+  // Use connectionActive flag + messages as fallback to enable UI controls.
   const isConnected =
     transportState === TransportStateEnum.READY ||
     transportState === TransportStateEnum.CONNECTED ||
-    (isConnecting && messages.length > 0);
+    (connectionActive && messages.length > 0);
 
   // Track if we've ever been connected (to show mic toggle even if state temporarily changes)
   const [hasBeenConnected, setHasBeenConnected] = useState(false);
@@ -142,6 +144,7 @@ export default function RealTimeChatPanel({
       console.log("Connection response:", response.data);
       console.log("WebSocket URL from response:", response.data?.ws_url);
       console.log("Attempting to connect client...");
+      setConnectionActive(true);
 
       if (!client) {
         throw new Error("Pipecat client not initialized");
@@ -193,6 +196,7 @@ export default function RealTimeChatPanel({
       }, 5000);
     } catch (error: any) {
       console.error("Failed to connect:", error);
+      setConnectionActive(false);
       const errorMessage = error?.response?.data?.detail || error?.message || "Unknown error";
       console.error("Error details:", {
         status: error?.response?.status,
@@ -211,6 +215,7 @@ export default function RealTimeChatPanel({
         return;
       }
       console.log("Disconnecting client...");
+      setConnectionActive(false);
       setHasBeenConnected(false); // Reset connection state
       setIsPaused(false);
       await client?.disconnect();
