@@ -151,8 +151,13 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
 
     search_tool = FunctionSchema(
         name="search_knowledge_base",
-        description="Search the knowledge base for relevant information",
-        properties={"query": {"type": "string"}},
+        description="Search the uploaded knowledge base documents for relevant information. Only call this when the user asks a factual question that requires looking up document content. Do NOT call for greetings or casual conversation.",
+        properties={
+            "query": {
+                "type": "string",
+                "description": "A specific search query to find relevant information in the knowledge base documents. Should be a clear, descriptive phrase related to the user's question."
+            }
+        },
         required=["query"]
     )
 
@@ -218,7 +223,7 @@ async def run_bot(transport: BaseTransport, runner_args: RunnerArguments):
     @transport.event_handler("on_client_connected")
     async def on_client_connected(transport, client):
         logger.info(f"Client connected")
-        messages.append({"role": "system", "content": "Say hello and briefly introduce yourself."})
+        messages.append({"role": "system", "content": "Say hello and briefly introduce yourself. Do NOT call any tools for this greeting."})
         await task.queue_frames([LLMRunFrame()])
 
     @transport.event_handler("on_client_disconnected")
