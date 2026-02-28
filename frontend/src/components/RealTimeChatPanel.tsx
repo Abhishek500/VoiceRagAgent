@@ -27,7 +27,7 @@ export default function RealTimeChatPanel({
   tenantId,
   promptType,
 }: RealTimeChatPanelProps) {
-  // TEST BUILD VERSION 2.0
+  // BUILD_VERSION_V3.1 - verifiable deployment marker
   const client = usePipecatClient();
   const transportState = usePipecatClientTransportState();
 
@@ -36,7 +36,7 @@ export default function RealTimeChatPanel({
   const [chunksMetadata, setChunksMetadata] = useState<{ [key: string]: ChunkMetadata }>({});
   const [selectedEqId, setSelectedEqId] = useState<string>(equipmentId || "");
   const [isPaused, setIsPaused] = useState(false);
-  const [connectionActive, setConnectionActive] = useState(false);
+  const [userStopped, setUserStopped] = useState(false);
 
   const listRef = useRef<HTMLDivElement>(null);
   const endRef = useRef<HTMLDivElement>(null);
@@ -60,17 +60,20 @@ export default function RealTimeChatPanel({
     }
   }, [messages]);
 
-  const isConnecting =
+  const rawIsConnecting =
     transportState === TransportStateEnum.CONNECTING || transportState === TransportStateEnum.AUTHENTICATING;
-  // Check for READY state, but also allow CONNECTED as a fallback
-  // Also check if we're in a state where the connection is established (even if not READY yet)
-  // On HTTP (no HTTPS), mic access fails and transport may go to DISCONNECTED
-  // even though WebSocket is still working and bot messages are flowing.
-  // Use connectionActive flag + messages as fallback to enable UI controls.
+
+  // Core connection logic: trust messages over transport state.
+  // On HTTP without HTTPS, Pipecat transport never reaches READY/CONNECTED
+  // because mic/audio init fails. But the WebSocket works and bot messages flow.
+  // If we have messages and user hasn't clicked Stop, we ARE connected.
   const isConnected =
     transportState === TransportStateEnum.READY ||
     transportState === TransportStateEnum.CONNECTED ||
-    (connectionActive && messages.length > 0);
+    (messages.length > 0 && !userStopped);
+
+  // Don't show "Connecting..." when we're actually connected (messages flowing)
+  const isConnecting = rawIsConnecting && !isConnected;
 
   // Track if we've ever been connected (to show mic toggle even if state temporarily changes)
   const [hasBeenConnected, setHasBeenConnected] = useState(false);
@@ -83,11 +86,12 @@ export default function RealTimeChatPanel({
     }
   }, [isConnected, transportState, messages.length]);
 
-  // Log transport state changes for debugging
+  // Log all state for debugging - BUILD_VERSION_V3.1
   useEffect(() => {
-    console.log("Transport state changed:", transportState);
-    console.log("isConnecting:", isConnecting, "isConnected:", isConnected);
-  }, [transportState, isConnecting, isConnected]);
+    console.log("[v3.1] Transport:", transportState, "| isConnecting:", isConnecting,
+      "| isConnected:", isConnected, "| msgs:", messages.length,
+      "| userStopped:", userStopped);
+  }, [transportState, isConnecting, isConnected, messages.length, userStopped]);
 
   useRTVIClientEvent(RTVIEvent.BotReady, () => {
     console.log("✅ Bot is ready - connection established");
@@ -144,7 +148,7 @@ export default function RealTimeChatPanel({
       console.log("Connection response:", response.data);
       console.log("WebSocket URL from response:", response.data?.ws_url);
       console.log("Attempting to connect client...");
-      setConnectionActive(true);
+      setUserStopped(false);
 
       if (!client) {
         throw new Error("Pipecat client not initialized");
@@ -196,7 +200,7 @@ export default function RealTimeChatPanel({
       }, 5000);
     } catch (error: any) {
       console.error("Failed to connect:", error);
-      setConnectionActive(false);
+      setUserStopped(true);
       const errorMessage = error?.response?.data?.detail || error?.message || "Unknown error";
       console.error("Error details:", {
         status: error?.response?.status,
@@ -208,6 +212,7 @@ export default function RealTimeChatPanel({
   };
 
   const handleDisconnect = async () => {
+    setUserStopped(true);
     try {
       if (transportState === TransportStateEnum.DISCONNECTED || transportState === TransportStateEnum.DISCONNECTING) {
         console.log("Already disconnected or disconnecting");
@@ -215,8 +220,7 @@ export default function RealTimeChatPanel({
         return;
       }
       console.log("Disconnecting client...");
-      setConnectionActive(false);
-      setHasBeenConnected(false); // Reset connection state
+      setHasBeenConnected(false);
       setIsPaused(false);
       await client?.disconnect();
       console.log("Client disconnected successfully");
